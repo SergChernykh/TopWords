@@ -15,8 +15,8 @@ find_package(QT NAMES Qt6 Qt5 COMPONENTS Core Quick REQUIRED)
 find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core Quick REQUIRED)
 
 set(PROJECT_SOURCES
-        main.cpp
-        qml.qrc
+        src/main.cpp
+        ui/qml.qrc
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
