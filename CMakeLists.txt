@@ -16,6 +16,7 @@ find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core Quick REQUIRED)
 
 set(PROJECT_SOURCES
         src/main.cpp
+        src/filereader.h src/filereader.cpp
         ui/qml.qrc
 )
 
@@ -25,15 +26,9 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         ${PROJECT_SOURCES}
     )
 else()
-    if(ANDROID)
-        add_library(TopWords SHARED
-            ${PROJECT_SOURCES}
-        )
-    else()
-        add_executable(TopWords
-          ${PROJECT_SOURCES}
-        )
-    endif()
+    add_executable(TopWords
+      ${PROJECT_SOURCES}
+    )
 endif()
 
 target_compile_definitions(TopWords
