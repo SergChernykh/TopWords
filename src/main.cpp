@@ -1,7 +1,8 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
+#include <QQmlContext>
 
-#include "filereader.h"
+#include "topcounter.h"
 
 int main(int argc, char *argv[])
 {
@@ -11,11 +12,12 @@ int main(int argc, char *argv[])
 
     QGuiApplication app(argc, argv);
 
-
-    FileReader reader;
-    reader.read("test.txt");
+    TopCounter counter;
 
     QQmlApplicationEngine engine;
+
+    engine.rootContext()->setContextProperty("counter", &counter);
+
     const QUrl url(QStringLiteral("qrc:/main.qml"));
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
                      &app, [url](QObject *obj, const QUrl &objUrl) {

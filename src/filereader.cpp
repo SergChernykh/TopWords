@@ -6,33 +6,12 @@
 #include <QHash>
 #include <algorithm>
 #include <queue>
+#include <QFileInfo>
 #include <optional>
 
-static constexpr int INDEX_NONE = -1;
-
-struct WordHashItem
-{
-    unsigned int frequency = 0;
-    int indexInHeap = INDEX_NONE;
-};
-
-struct WordHeapitem
-{
-    QString word;
-    unsigned int frequency;
-};
-
-struct Comparator
-{
-    bool operator() (const WordHeapitem& left, const WordHeapitem& item2)
-    {
-        return left.frequency > item2.frequency;
-    }
-};
-
-
-FileReader::FileReader(QObject *parent) : QObject(parent)
-{
+FileReader::FileReader(QObject *parent)
+    : QObject(parent)
+    , m_heapCapacity(15){
 
 }
 
@@ -49,46 +28,36 @@ void FileReader::read(const QString &path)
 
     QString word;
 
-    QHash<QString, WordHashItem> words;
+    prepare();
 
-    QVector<WordHeapitem> topWordsHeap;
-    std::make_heap(topWordsHeap.begin(), topWordsHeap.end(), Comparator {});
-
-    const int heapCapacity = 15;
-
-    topWordsHeap.reserve(heapCapacity);
+    quint64 total = file.size();
+    quint64 processed = 0;
 
     while (!stream.atEnd())
     {
         stream >> word;
-        words[word].frequency++;
 
-        auto& item = words[word];
+        m_words[word].frequency++;
 
-        if (item.indexInHeap != INDEX_NONE)
+        auto& item = m_words[word];
+
+        if (isHeapContainsItem(item))
         {
-            topWordsHeap[item.indexInHeap].frequency = item.frequency;
-            std::make_heap(topWordsHeap.begin(), topWordsHeap.end(), Comparator {});
+            updateWordFrequencyInHeap(item);
         }
         else
         {
-            if (topWordsHeap.size() < heapCapacity)
+            if (!isHeapFull())
             {
-                topWordsHeap.push_back(WordHeapitem {word, item.frequency});
-                std::push_heap(topWordsHeap.begin(), topWordsHeap.end(), Comparator {});
+                pushInHeap(word, item.frequency);
             }
             else
             {
-                if (item.frequency > topWordsHeap.front().frequency)
+                if (item.frequency > m_topWordsHeap.front().frequency)
                 {
-                    words[topWordsHeap.front().word].indexInHeap = INDEX_NONE;
-                    std::pop_heap(topWordsHeap.begin(), topWordsHeap.end(), Comparator {});
-                    topWordsHeap.pop_back(); //TODO: may be use pop_front() instead
-
-                    topWordsHeap.push_back(WordHeapitem {word, item.frequency});
-                    std::push_heap(topWordsHeap.begin(), topWordsHeap.end(), Comparator {});
-
-                    //TODO: may be use one call std::make_heap
+                    m_words[m_topWordsHeap.front().word].indexInHeap = INDEX_NONE;
+                    popFromHeap();
+                    pushInHeap(word, item.frequency);
                 }
                 else
                 {
@@ -97,19 +66,64 @@ void FileReader::read(const QString &path)
             }
         }
 
-        // update indexes in hash
-        for (int i = 0; i < topWordsHeap.size(); ++i)
-        {
-            const auto& item = topWordsHeap[i];
-            words[item.word].indexInHeap = i;
-        }
+        updateIndexesInHash();
     }
 
-    for (auto it = topWordsHeap.begin(); it != topWordsHeap.end(); ++it)
-    {
-        qDebug() << it->word << it->frequency;
-    }
-
+    emit progress(total, total);
+    emit completed();
 
     file.close();
+}
+
+void FileReader::procces()
+{
+    read("test3.txt");
+}
+
+const QVector<WordHeapitem> &FileReader::getResults() const
+{
+    return m_topWordsHeap;
+}
+
+void FileReader::prepare()
+{
+    std::make_heap(m_topWordsHeap.begin(), m_topWordsHeap.end(), Comparator {});
+    m_topWordsHeap.reserve(m_heapCapacity);
+}
+
+bool FileReader::isHeapContainsItem(const WordHashItem &item) const
+{
+    return item.indexInHeap != INDEX_NONE;
+}
+
+void FileReader::updateWordFrequencyInHeap(const WordHashItem &item)
+{
+    m_topWordsHeap[item.indexInHeap].frequency = item.frequency;
+    std::make_heap(m_topWordsHeap.begin(), m_topWordsHeap.end(), Comparator {});
+}
+
+bool FileReader::isHeapFull() const
+{
+    return m_topWordsHeap.size() >= m_heapCapacity;
+}
+
+void FileReader::pushInHeap(const QString &word, unsigned int frequency)
+{
+    m_topWordsHeap.push_back(WordHeapitem {word, frequency});
+    std::push_heap(m_topWordsHeap.begin(), m_topWordsHeap.end(), Comparator {});
+}
+
+void FileReader::popFromHeap()
+{
+    std::pop_heap(m_topWordsHeap.begin(), m_topWordsHeap.end(), Comparator {});
+    m_topWordsHeap.pop_back();
+}
+
+void FileReader::updateIndexesInHash()
+{
+    for (int i = 0; i < m_topWordsHeap.size(); ++i)
+    {
+        const auto& item = m_topWordsHeap[i];
+        m_words[item.word].indexInHeap = i;
+    }
 }

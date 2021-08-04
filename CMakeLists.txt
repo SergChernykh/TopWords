@@ -17,6 +17,7 @@ find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core Quick REQUIRED)
 set(PROJECT_SOURCES
         src/main.cpp
         src/filereader.h src/filereader.cpp
+        src/topcounter.h src/topcounter.cpp
         ui/qml.qrc
 )
 
