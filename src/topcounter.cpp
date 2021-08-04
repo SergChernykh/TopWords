@@ -1,5 +1,6 @@
 #include "topcounter.h"
 
+#include "wordsmodel.h"
 #include <QDebug>
 
 TopCounter::TopCounter(QObject *parent)
@@ -11,8 +12,11 @@ TopCounter::TopCounter(QObject *parent)
 
     connect(&m_thread, &QThread::finished, m_reader, &QObject::deleteLater);
     connect(&m_thread, &QThread::started, m_reader, &FileReader::procces);
-    connect(m_reader, &FileReader::completed, this, &TopCounter::onCompleted);
-    connect(m_reader, &FileReader::progress, this, &TopCounter::onProgress);
+    connect(m_reader, &FileReader::completed, this, &TopCounter::onCompleted, Qt::QueuedConnection);
+    connect(m_reader, &FileReader::newWord, this, &TopCounter::onNewWord, Qt::QueuedConnection);
+    connect(m_reader, &FileReader::progress, this, &TopCounter::onProgress, Qt::QueuedConnection);
+    connect(m_reader, &FileReader::removeWord, this, &TopCounter::onRemoveWord, Qt::QueuedConnection);
+
 
     m_thread.start();
 }
@@ -23,9 +27,20 @@ TopCounter::~TopCounter()
     m_thread.wait();
 }
 
-void TopCounter::onNewWord(const QString &word)
+void TopCounter::onNewWord(const QString &word, int frequency)
 {
+    if (m_wordsModel)
+    {
+        m_wordsModel->insertWord(word, frequency);
+    }
+}
 
+void TopCounter::onRemoveWord(const QString &word)
+{
+    if (m_wordsModel)
+    {
+        m_wordsModel->removeWord(word);
+    }
 }
 
 void TopCounter::onCompleted()
@@ -41,6 +56,8 @@ void TopCounter::onCompleted()
     {
         qDebug() << item.word << item.frequency;
     }
+
+    m_wordsModel->complete();
 }
 
 void TopCounter::onProgress(qint64 processed, qint64 total)
@@ -63,4 +80,9 @@ void TopCounter::setProgress(double newProgress)
         return;
     m_progress = newProgress;
     emit progressChanged();
+}
+
+void TopCounter::setWordsModel(WordsModel *model)
+{
+    m_wordsModel = model;
 }

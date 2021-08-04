@@ -5,7 +5,7 @@ Item {
     id: root
 
     property alias model: view.model
-    property int max: 2000
+    property int max: 70000
     property int step: 10
 
 
@@ -97,6 +97,10 @@ Item {
             width: (__lv.width - (__lv.count - 1) * __lv.spacing) / __lv.count
             value: model.frequency
             label: model.word
+
+//            Behavior on height {
+//                NumberAnimation { duration: 50 }
+//            }
 
             Label {
                 id: labelText

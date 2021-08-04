@@ -3,6 +3,7 @@
 #include <QQmlContext>
 
 #include "topcounter.h"
+#include "wordsmodel.h"
 
 int main(int argc, char *argv[])
 {
@@ -13,10 +14,14 @@ int main(int argc, char *argv[])
     QGuiApplication app(argc, argv);
 
     TopCounter counter;
+    WordsModel wordsModel;
+
+    counter.setWordsModel(&wordsModel);
 
     QQmlApplicationEngine engine;
 
     engine.rootContext()->setContextProperty("counter", &counter);
+    engine.rootContext()->setContextProperty("wordsModel", &wordsModel);
 
     const QUrl url(QStringLiteral("qrc:/main.qml"));
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,

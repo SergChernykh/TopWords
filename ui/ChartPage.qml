@@ -16,16 +16,16 @@ Page {
         text: qsTr("Chart")
     }
 
-    ListModel {
-        id: wordsModel
+//    ListModel {
+//        id: wordsModel
 
-        Component.onCompleted: {
-            for (var i = 0; i < 15; i++) {
-                var item = {"word" : `word${i}`, "frequency" : 100 * (i + 1)}
-                wordsModel.append(item)
-            }
-        }
-    }
+//        Component.onCompleted: {
+//            for (var i = 0; i < 15; i++) {
+//                var item = {"word" : `word${i}`, "frequency" : 100 * (i + 1)}
+//                wordsModel.append(item)
+//            }
+//        }
+//    }
 
     BarChart {
         id: chart

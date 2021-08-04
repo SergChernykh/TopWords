@@ -41,6 +41,8 @@ public:
 signals:
     void completed();
     void progress(qint64 processed, qint64 total);
+    void newWord(const QString& word, int frequency);
+    void removeWord(const QString& word);
 
 private:
     void prepare();

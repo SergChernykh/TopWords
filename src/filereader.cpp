@@ -44,20 +44,25 @@ void FileReader::read(const QString &path)
         if (isHeapContainsItem(item))
         {
             updateWordFrequencyInHeap(item);
+            emit newWord(word, item.frequency);
         }
         else
         {
             if (!isHeapFull())
             {
                 pushInHeap(word, item.frequency);
+                emit newWord(word, item.frequency);
             }
             else
             {
                 if (item.frequency > m_topWordsHeap.front().frequency)
                 {
-                    m_words[m_topWordsHeap.front().word].indexInHeap = INDEX_NONE;
+                    const QString& oldWord = m_topWordsHeap.front().word;
+                    m_words[oldWord].indexInHeap = INDEX_NONE;
+                    emit removeWord(oldWord);
                     popFromHeap();
                     pushInHeap(word, item.frequency);
+                    emit newWord(word, item.frequency);
                 }
                 else
                 {
