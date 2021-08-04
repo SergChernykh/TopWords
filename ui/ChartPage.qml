@@ -16,6 +16,17 @@ Page {
         text: qsTr("Chart")
     }
 
+    ProgressBar {
+        anchors {
+            top: parent.top
+            horizontalCenter: parent.horizontalCenter
+            topMargin: 50
+        }
+        width: 300
+        height: 10
+        value: counter.progress
+    }
+
 //    ListModel {
 //        id: wordsModel
 
