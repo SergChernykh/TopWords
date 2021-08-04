@@ -18,6 +18,7 @@ set(PROJECT_SOURCES
         src/main.cpp
         src/filereader.h src/filereader.cpp
         src/topcounter.h src/topcounter.cpp
+        src/wordsmodel.h src/wordsmodel.cpp
         ui/qml.qrc
 )
 
