@@ -8,7 +8,8 @@ TopCounter::TopCounter(QObject *parent)
     : QObject(parent)
     , m_progress(0)
     , m_fileProcessing(false)
-    , m_frequencyAxisMax(100)
+    , m_defaultFrequencyAxisMax(100)
+    , m_frequencyAxisMax(m_defaultFrequencyAxisMax)
     , m_frequencyAxisThreshold(0.95)
     , m_frequecnyAxisIncreaseRatio(2.0)
     , m_framePerSeconds(120)
@@ -32,10 +33,7 @@ TopCounter::TopCounter(QObject *parent)
 
     m_tickTimer.setInterval(1000 / m_framePerSeconds);
     connect(&m_tickTimer, &QTimer::timeout, [this]{
-        if (m_wordsModel != nullptr)
-        {
-            m_wordsModel->refresh();
-        }
+        tick();
     });
 }
 
@@ -47,6 +45,7 @@ TopCounter::~TopCounter()
 
 void TopCounter::processFile(const QString &path)
 {
+    reset();
     emit requestProcessFile(path);
 }
 
@@ -74,6 +73,7 @@ void TopCounter::onStarted()
 {
     setFileProcessing(true);
     m_tickTimer.start();
+    tick();
 }
 
 void TopCounter::onCompleted()
@@ -91,6 +91,27 @@ void TopCounter::onProgress(qint64 processed, qint64 total)
 
     m_progress = static_cast<double>(processed) / static_cast<double>(total);
     emit progressChanged();
+}
+
+void TopCounter::reset()
+{
+    m_progress = 0;
+    emit progressChanged();
+
+    if (m_wordsModel)
+    {
+        m_wordsModel->clear();
+    }
+
+    setfrequencyAxisMax(m_defaultFrequencyAxisMax);
+}
+
+void TopCounter::tick()
+{
+    if (m_wordsModel != nullptr)
+    {
+        m_wordsModel->refresh();
+    }
 }
 
 void TopCounter::setWordsModel(WordsModel *model)

@@ -45,11 +45,16 @@ private slots:
     void onProgress(qint64 processed, qint64 total);
 
 private:
+    void reset();
+    void tick();
+
+private:
     QThread m_thread;
     FileReader* m_reader;
     double m_progress;
     WordsModel* m_wordsModel;
     bool m_fileProcessing;
+    int m_defaultFrequencyAxisMax;
     int m_frequencyAxisMax;
     double m_frequencyAxisThreshold;
     double m_frequecnyAxisIncreaseRatio;

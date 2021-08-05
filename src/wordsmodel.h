@@ -34,6 +34,7 @@ public:
     int count() const;
 
     void refresh();
+    void clear();
 
 signals:
     void countChanged();

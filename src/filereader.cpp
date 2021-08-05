@@ -110,6 +110,9 @@ void FileReader::processFile(const QString &path)
 
 void FileReader::prepare()
 {
+    m_words.clear();
+    m_topWordsHeap.clear();
+
     std::make_heap(m_topWordsHeap.begin(), m_topWordsHeap.end(), Comparator {});
     m_topWordsHeap.reserve(m_heapCapacity);
 }

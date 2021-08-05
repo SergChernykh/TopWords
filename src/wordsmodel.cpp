@@ -84,6 +84,13 @@ void WordsModel::refresh()
     emit dataChanged(index(0), index(count() - 1), { Frequency, Word, Color });
 }
 
+void WordsModel::clear()
+{
+    beginResetModel();
+    m_wordsMap.clear();
+    endResetModel();
+}
+
 QColor WordsModel::generateRandomColor() const
 {
    return QColor::fromRgb(QRandomGenerator::global()->generate());
