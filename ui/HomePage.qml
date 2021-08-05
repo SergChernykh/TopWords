@@ -18,7 +18,17 @@ Page {
         visible: false
         onAccepted: {
             root.fileSelected(fileDialog.fileUrl)
+            filePathText.text = fileDialog.fileUrl
             close();
+        }
+    }
+
+    TextField {
+        id: filePathText
+        anchors {
+            top: parent.top
+            horizontalCenter: parent.horizontalCenter
+            topMargin: 50
         }
     }
 

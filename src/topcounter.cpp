@@ -2,11 +2,16 @@
 
 #include "wordsmodel.h"
 #include <QDebug>
+#include <cmath>
 
 TopCounter::TopCounter(QObject *parent)
     : QObject(parent)
     , m_progress(0)
     , m_fileProcessing(false)
+    , m_frequencyAxisMax(100)
+    , m_frequencyAxisThreshold(0.95)
+    , m_frequecnyAxisIncreaseRatio(2.0)
+    , m_framePerSeconds(120)
 {
     m_reader = new FileReader();
     m_reader->moveToThread(&m_thread);
@@ -24,6 +29,14 @@ TopCounter::TopCounter(QObject *parent)
     connect(this, &TopCounter::requestProcessFile, m_reader, &FileReader::processFile);
 
     m_thread.start();
+
+    m_tickTimer.setInterval(1000 / m_framePerSeconds);
+    connect(&m_tickTimer, &QTimer::timeout, [this]{
+        if (m_wordsModel != nullptr)
+        {
+            m_wordsModel->refresh();
+        }
+    });
 }
 
 TopCounter::~TopCounter()
@@ -41,6 +54,10 @@ void TopCounter::onNewWord(const QString &word, int frequency)
 {
     if (m_wordsModel)
     {
+        if (frequency > m_frequencyAxisMax * m_frequencyAxisThreshold)
+        {
+            setfrequencyAxisMax(m_frequencyAxisMax * m_frequecnyAxisIncreaseRatio);
+        }
         m_wordsModel->insertWord(word, frequency);
     }
 }
@@ -56,11 +73,13 @@ void TopCounter::onRemoveWord(const QString &word)
 void TopCounter::onStarted()
 {
     setFileProcessing(true);
+    m_tickTimer.start();
 }
 
 void TopCounter::onCompleted()
 {
     setFileProcessing(false);
+    m_tickTimer.stop();
 }
 
 void TopCounter::onProgress(qint64 processed, qint64 total)
@@ -86,4 +105,12 @@ void TopCounter::setFileProcessing(bool value)
         m_fileProcessing = value;
         emit fileProcessingChanged();
     }
+}
+
+void TopCounter::setfrequencyAxisMax(int newfrequencyAxisMax)
+{
+    if (m_frequencyAxisMax == newfrequencyAxisMax)
+        return;
+    m_frequencyAxisMax = newfrequencyAxisMax;
+    emit frequencyAxisMaxChanged();
 }

@@ -21,6 +21,8 @@ ApplicationWindow {
     }
 
     header: Item {
+        height: 70 * appUIScale.yScale
+
         FileSelectionItem {
             anchors {
                 top: parent.top
@@ -55,16 +57,20 @@ ApplicationWindow {
         id: body
         anchors.fill: parent
 
-//        BarChart {
-//            anchors {
-//                centerIn: parent
-//            }
+        BarChart {
+            anchors {
+                top: parent.top
+                right: parent.right
+                left: parent.left
+                bottom: progressBar.top
+                bottomMargin: 20 * appUIScale.yScale
+                topMargin: 20 * appUIScale.yScale
+                rightMargin: 20 * appUIScale.xScale
+                leftMargin: 80 * appUIScale.xScale
+            }
 
-//            width: 500
-//            height: 300
-
-//            model: wordsModel
-//        }
+            model: wordsModel
+        }
 
         ProgressBar {
             id: progressBar

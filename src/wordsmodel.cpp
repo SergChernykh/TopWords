@@ -1,17 +1,12 @@
 #include "wordsmodel.h"
 
 #include <QDebug>
+#include <QRandomGenerator>
 
 WordsModel::WordsModel(QObject *parent)
     : QAbstractListModel(parent)
 {
-    m_tickTimer.setInterval(1000 / 120);
 
-    connect(&m_tickTimer, &QTimer::timeout, [this]{
-        emit dataChanged(index(0), index(count() - 1), { Frequency, Word });
-    });
-
-    m_tickTimer.start();
 }
 
 int WordsModel::rowCount(const QModelIndex &parent) const
@@ -35,7 +30,9 @@ QVariant WordsModel::data(const QModelIndex &index, int role) const
     case Word:
         return it.key();
     case Frequency:
-        return it.value();
+        return it.value().frequency;
+    case Color:
+        return it.value().color;
     default:
         return QVariant();
     }
@@ -45,7 +42,8 @@ QHash<int, QByteArray> WordsModel::roleNames() const
 {
     return {
         { Word, "word" },
-        { Frequency, "frequency"}
+        { Frequency, "frequency"},
+        { Color, "color" }
     };
 }
 
@@ -58,10 +56,6 @@ void WordsModel::removeWord(const QString &word)
         beginRemoveRows(QModelIndex(), idx, idx);
         m_wordsMap.erase(it);
         endRemoveRows();
-//        emit dataChanged(index(0), index(m_wordsMap.size()), {Word, Frequency});
-//        endResetModel();
-//        emit countChanged();
-//        emit layoutChanged();
     }
 }
 
@@ -70,23 +64,13 @@ void WordsModel::insertWord(const QString &word, int frequency)
     auto it = m_wordsMap.find(word);
     if (it != m_wordsMap.end())
     {
-        it.value() = frequency;
-        QModelIndex idx = index(std::distance(m_wordsMap.begin(), it));
-        if (idx.isValid())
-        {
-//            emit dataChanged(idx, idx, { Frequency, Word });
-        }
+        it.value().frequency = frequency;
     }
     else
     {
         beginInsertRows(QModelIndex(), count(), count());
-//        beginResetModel();
-        m_wordsMap.insert(word, frequency);
+        m_wordsMap.insert(word, WordData { frequency, generateRandomColor() });
         endInsertRows();
-//        endResetModel();
-//        emit dataChanged(index(0), index(m_wordsMap.size()), {Word, Frequency});
-
-//        emit countChanged();
     }
 }
 
@@ -94,3 +78,14 @@ int WordsModel::count() const
 {
     return m_wordsMap.size();
 }
+
+void WordsModel::refresh()
+{
+    emit dataChanged(index(0), index(count() - 1), { Frequency, Word, Color });
+}
+
+QColor WordsModel::generateRandomColor() const
+{
+   return QColor::fromRgb(QRandomGenerator::global()->generate());
+}
+

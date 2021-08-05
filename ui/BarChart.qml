@@ -1,21 +1,22 @@
 import QtQuick 2.14
 import QtQuick.Controls 2.14
+import QtQuick.Layouts 1.12
 
 Item {
     id: root
 
     property alias model: view.model
-    property int max: 70000
+    property int max: counter.frequencyAxisMax
     property int step: 10
 
 
     Column {
-        anchors.fill: parent
+        anchors.fill: view
 
         spacing: height / root.step - 1
 
         Repeater {
-            model: 10
+            model: root.step + 1
 
             Item {
                 width: parent.width
@@ -27,23 +28,15 @@ Item {
                         verticalCenter: parent.verticalCenter
                     }
                     x: -width
-                    rightPadding: 5
-                    text: Math.floor(root.max / 10 * (10 - index))
-                    width: 50
+                    rightPadding: 5 * appUIScale.xScale
+                    text: Math.floor(root.max / root.step * (root.step - index))
+                    width: 80 * appUIScale.xScale
+                    elide: Text.ElideLeft
                     fontSizeMode: Text.HorizontalFit
 
                     horizontalAlignment: Text.AlignRight
                     verticalAlignment: Text.AlignVCenter
                 }
-
-//                Rectangle {
-//                    anchors {
-//                        fill: stepValueText
-//                    }
-//                    color: "transparent"
-//                    border.width: 1
-//                    border.color: "red"
-//                }
 
                 Rectangle {
                     width: parent.width
@@ -54,34 +47,68 @@ Item {
         }
     }
 
-    Rectangle {
-        anchors.fill: parent
-        color: "transparent"
-        border.color: "grey"
-        border.width: 1
-
-        Text {
-            anchors {
-                verticalCenter: parent.bottom
-            }
-            x: -width
-            rightPadding: 5
-            text: "0"
-            width: 50
-            horizontalAlignment: Text.AlignRight
-            verticalAlignment: Text.AlignVCenter
-        }
-    }
-
     ListView {
         id: view
-        anchors.fill: parent
+        anchors {
+            top: parent.top
+            right: legendView.left
+            rightMargin: 20 * appUIScale.xScale
+            left: parent.left
+            bottom: parent.bottom
+        }
+
         orientation: ListView.Horizontal
         layoutDirection: ListView.LeftToRight
         interactive: false
         delegate: barItemDelegate
         focus: true
-        spacing: 10
+        spacing: 10 * appUIScale.xScale
+    }
+
+    ListView {
+        id: legendView
+
+        anchors {
+            right: parent.right
+            bottom: parent.bottom
+            top: parent.top
+        }
+
+        width: 100 * appUIScale.xScale
+
+        model: root.model
+        interactive: false
+        spacing: 5 * appUIScale.yScale
+        delegate: legendItemDelegate
+
+    }
+
+    Component {
+        id: legendItemDelegate
+
+        Item {
+            readonly property ListView __lv: ListView.view
+
+            width: __lv.width
+            height: 20 * appUIScale.yScale
+
+            RowLayout {
+                spacing: 10
+                anchors.fill: parent
+                Rectangle {
+                    Layout.preferredWidth: 20 * Math.min(appUIScale.xScale, appUIScale.yScale)
+                    Layout.preferredHeight: 20 * Math.min(appUIScale.xScale, appUIScale.yScale)
+                    color: model.color
+                }
+
+                Text {
+                    Layout.fillWidth: true
+                    text: model.word
+                    fontSizeMode: Text.HorizontalFit
+                    elide: Text.ElideRight
+                }
+            }
+        }
     }
 
     Component {
@@ -96,27 +123,7 @@ Item {
             height: (value * __lv.height) / root.max
             width: (__lv.width - (__lv.count - 1) * __lv.spacing) / __lv.count
             value: model.frequency
-            label: model.word
-
-//            Behavior on height {
-//                NumberAnimation { duration: 50 }
-//            }
-
-            Label {
-                id: labelText
-                anchors {
-                    bottom: parent.bottom
-                    bottomMargin: -50
-                    horizontalCenter: parent.horizontalCenter
-                }
-                rotation: -90
-                width: 50
-
-                text: model.word
-                horizontalAlignment: Text.AlignRight
-                verticalAlignment: Text.AlignVCenter
-
-            }
+            color: model.color
         }
     }
 }

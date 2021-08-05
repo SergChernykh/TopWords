@@ -1,9 +1,8 @@
 #ifndef WORDSMODEL_H
 #define WORDSMODEL_H
 
-#include <QObject>
 #include <QAbstractListModel>
-#include <QTimer>
+#include <QColor>
 
 class WordsModel : public QAbstractListModel
 {
@@ -13,7 +12,14 @@ public:
     enum Roles
     {
         Word = Qt::UserRole + 1,
-        Frequency
+        Frequency,
+        Color
+    };
+
+    struct WordData
+    {
+        int frequency;
+        QColor color;
     };
 
 public:
@@ -27,12 +33,16 @@ public:
     void insertWord(const QString& word, int frequency);
     int count() const;
 
+    void refresh();
+
 signals:
     void countChanged();
 
 private:
-    QMap<QString, int> m_wordsMap;
-    QTimer m_tickTimer;
+    QColor generateRandomColor() const;
+
+private:
+    QMap<QString, WordData> m_wordsMap;
 };
 
 #endif // WORDSMODEL_H

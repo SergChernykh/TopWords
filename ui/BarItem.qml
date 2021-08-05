@@ -5,7 +5,6 @@ Item {
     id: root
 
     property color color: "lightblue"
-    property string label
     property int value
 
     Rectangle {
@@ -17,8 +16,16 @@ Item {
             anchors.fill: parent
             hoverEnabled: true
         }
+    }
 
-        ToolTip.visible: mouseArea.containsMouse
-        ToolTip.text: root.value
+    ToolTip {
+        id: toolTip
+        text: root.value
+        visible: mouseArea.containsMouse
+        contentItem: Text {
+            text: toolTip.text
+            font: toolTip.font
+            color: "white"
+        }
     }
 }
