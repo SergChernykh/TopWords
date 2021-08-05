@@ -27,8 +27,6 @@ public:
     void insertWord(const QString& word, int frequency);
     int count() const;
 
-    void complete();
-
 signals:
     void countChanged();
 

@@ -6,17 +6,22 @@
 TopCounter::TopCounter(QObject *parent)
     : QObject(parent)
     , m_progress(0)
+    , m_fileProcessing(false)
 {
     m_reader = new FileReader();
     m_reader->moveToThread(&m_thread);
 
     connect(&m_thread, &QThread::finished, m_reader, &QObject::deleteLater);
-    connect(&m_thread, &QThread::started, m_reader, &FileReader::procces);
-    connect(m_reader, &FileReader::completed, this, &TopCounter::onCompleted, Qt::QueuedConnection);
-    connect(m_reader, &FileReader::newWord, this, &TopCounter::onNewWord, Qt::QueuedConnection);
-    connect(m_reader, &FileReader::progress, this, &TopCounter::onProgress, Qt::QueuedConnection);
-    connect(m_reader, &FileReader::removeWord, this, &TopCounter::onRemoveWord, Qt::QueuedConnection);
 
+    connect(m_reader, &FileReader::error, [this](const FileReaderError& e){
+        emit error(e.message);
+    });
+    connect(m_reader, &FileReader::started, this, &TopCounter::onStarted);
+    connect(m_reader, &FileReader::completed, this, &TopCounter::onCompleted);
+    connect(m_reader, &FileReader::newWord, this, &TopCounter::onNewWord);
+    connect(m_reader, &FileReader::progress, this, &TopCounter::onProgress);
+    connect(m_reader, &FileReader::removeWord, this, &TopCounter::onRemoveWord);
+    connect(this, &TopCounter::requestProcessFile, m_reader, &FileReader::processFile);
 
     m_thread.start();
 }
@@ -25,6 +30,11 @@ TopCounter::~TopCounter()
 {
     m_thread.quit();
     m_thread.wait();
+}
+
+void TopCounter::processFile(const QString &path)
+{
+    emit requestProcessFile(path);
 }
 
 void TopCounter::onNewWord(const QString &word, int frequency)
@@ -43,21 +53,14 @@ void TopCounter::onRemoveWord(const QString &word)
     }
 }
 
+void TopCounter::onStarted()
+{
+    setFileProcessing(true);
+}
+
 void TopCounter::onCompleted()
 {
-    if (m_reader == nullptr)
-    {
-        return;
-    }
-
-    const auto& results = m_reader->getResults();
-
-    for (const auto& item : results)
-    {
-        qDebug() << item.word << item.frequency;
-    }
-
-    m_wordsModel->complete();
+    setFileProcessing(false);
 }
 
 void TopCounter::onProgress(qint64 processed, qint64 total)
@@ -66,23 +69,21 @@ void TopCounter::onProgress(qint64 processed, qint64 total)
     {
         return;
     }
-    setProgress(static_cast<double>(processed) / static_cast<double>(total));
-}
 
-double TopCounter::progress() const
-{
-    return m_progress;
-}
-
-void TopCounter::setProgress(double newProgress)
-{
-    if (qFuzzyCompare(m_progress, newProgress))
-        return;
-    m_progress = newProgress;
+    m_progress = static_cast<double>(processed) / static_cast<double>(total);
     emit progressChanged();
 }
 
 void TopCounter::setWordsModel(WordsModel *model)
 {
     m_wordsModel = model;
+}
+
+void TopCounter::setFileProcessing(bool value)
+{
+    if (m_fileProcessing != value)
+    {
+        m_fileProcessing = value;
+        emit fileProcessingChanged();
+    }
 }

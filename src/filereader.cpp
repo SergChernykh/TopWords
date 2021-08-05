@@ -9,6 +9,7 @@
 #include <QFileInfo>
 #include <optional>
 #include <QElapsedTimer>
+#include <QThread>
 
 FileReader::FileReader(QObject *parent)
     : QObject(parent)
@@ -16,14 +17,19 @@ FileReader::FileReader(QObject *parent)
 
 }
 
-void FileReader::read(const QString &path)
+void FileReader::processFile(const QString &path)
 {
     QFile file(path);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
     {
-        qDebug() << "Cannot open file by path: " << path;
+        QString errMessage = QString("Cannot open file by path %1").arg(path);
+        qWarning() << errMessage;
+
+        emit error(FileReaderError(std::move(errMessage)));
         return;
     }
+
+    emit started();
 
 //    QTextStream stream(&file);
 
@@ -100,16 +106,6 @@ void FileReader::read(const QString &path)
     emit completed();
 
     file.close();
-}
-
-void FileReader::procces()
-{
-    read("test3.txt");
-}
-
-const QVector<WordHeapitem> &FileReader::getResults() const
-{
-    return m_topWordsHeap;
 }
 
 void FileReader::prepare()

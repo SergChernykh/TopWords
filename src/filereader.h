@@ -7,6 +7,7 @@
 
 static constexpr int INDEX_NONE = -1;
 
+//TODO: may be rename
 struct WordHashItem
 {
     unsigned int frequency = 0;
@@ -27,22 +28,32 @@ struct Comparator
     }
 };
 
-//TODO: rename
+struct FileReaderError
+{
+    QString message;
+
+    FileReaderError() {}
+    explicit FileReaderError(QString m) : message(std::move(m)) {}
+};
+
+Q_DECLARE_METATYPE(FileReaderError);
+
 class FileReader : public QObject
 {
     Q_OBJECT
 public:
     explicit FileReader(QObject *parent = nullptr);
 
-    void read(const QString& path);
-    void procces();
-    const QVector<WordHeapitem>& getResults() const;
+public slots:
+    void processFile(const QString& path);
 
 signals:
+    void started();
     void completed();
     void progress(qint64 processed, qint64 total);
     void newWord(const QString& word, int frequency);
     void removeWord(const QString& word);
+    void error(const FileReaderError& e);
 
 private:
     void prepare();

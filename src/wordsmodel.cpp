@@ -94,15 +94,3 @@ int WordsModel::count() const
 {
     return m_wordsMap.size();
 }
-
-void WordsModel::complete()
-{
-    int total = 0;
-
-    for (auto it = m_wordsMap.begin(); it != m_wordsMap.end(); ++it)
-    {
-        total += it.value();
-        qDebug() << it.key() << it.value();
-    }
-    qDebug() << "total" << total;
-}
