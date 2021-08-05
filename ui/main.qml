@@ -3,21 +3,32 @@ import QtQuick.Controls 2.14
 
 ApplicationWindow {
     id: window
-    width: 640
-    height: 480
+    width: 720
+    height: 560
     visible: true
-    title: qsTr("Stack")
+    title: qsTr("Top words")
+    minimumWidth: 720
+    minimumHeight: 560
+
+    Scale {
+        id: appUIScale
+        xScale: window.width / minimumWidth
+        yScale: window.height / minimumHeight
+    }
 
     StackView {
         id: stackView
-        initialItem: chartPageComponent
+        initialItem: homePageComponent
         anchors.fill: parent
     }
 
     Component {
         id: homePageComponent
         HomePage {
-
+            id: homePage
+            onFileSelected: {
+                console.log("Selected file: ", path)
+            }
         }
     }
 

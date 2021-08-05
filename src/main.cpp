@@ -13,6 +13,10 @@ int main(int argc, char *argv[])
 
     QGuiApplication app(argc, argv);
 
+    app.setApplicationName("TopWords");
+    app.setOrganizationName("SergeyChernykh");
+    app.setOrganizationDomain("loc");
+
     TopCounter counter;
     WordsModel wordsModel;
 
