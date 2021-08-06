@@ -37,21 +37,18 @@ void FileReader::processFile(const QString &path)
     quint64 total = file.size();
     quint64 processed = 0;
 
-    QByteArray buffer;
-
     QTextStream stream(&file);
 
     while (!stream.atEnd())
     {
-        stream >> buffer;
-        word = QString::fromUtf8(buffer);
+        stream >> word;
 
         if (word.isEmpty())
         {
             continue;
         }
 
-        processed += buffer.size() + WHITESPACE_SIZE;
+        processed += word.toUtf8().size() + WHITESPACE_SIZE;
         emit progress(processed, total);
 
         m_words[word].frequency++;
