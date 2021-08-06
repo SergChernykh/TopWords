@@ -2,8 +2,6 @@
     <qresource prefix="/">
         <file>main.qml</file>
         <file>qtquickcontrols2.conf</file>
-        <file>HomePage.qml</file>
-        <file>ChartPage.qml</file>
         <file>BarItem.qml</file>
         <file>BarChart.qml</file>
         <file>FileSelectionItem.qml</file>
