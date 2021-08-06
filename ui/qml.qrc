@@ -5,5 +5,6 @@
         <file>BarItem.qml</file>
         <file>BarChart.qml</file>
         <file>FileSelectionItem.qml</file>
+        <file>LegendItem.qml</file>
     </qresource>
 </RCC>

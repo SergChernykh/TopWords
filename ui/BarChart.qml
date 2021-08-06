@@ -86,28 +86,14 @@ Item {
     Component {
         id: legendItemDelegate
 
-        Item {
+        LegendItem {
             readonly property ListView __lv: ListView.view
 
             width: __lv.width
             height: 20 * appUIScale.yScale
 
-            RowLayout {
-                spacing: 10
-                anchors.fill: parent
-                Rectangle {
-                    Layout.preferredWidth: 20 * Math.min(appUIScale.xScale, appUIScale.yScale)
-                    Layout.preferredHeight: 20 * Math.min(appUIScale.xScale, appUIScale.yScale)
-                    color: model.color
-                }
-
-                Text {
-                    Layout.fillWidth: true
-                    text: model.word
-                    fontSizeMode: Text.HorizontalFit
-                    elide: Text.ElideRight
-                }
-            }
+            value: model.word
+            color: model.color
         }
     }
 
