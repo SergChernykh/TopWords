@@ -48,7 +48,7 @@ void FileReader::processFile(const QString &path)
             continue;
         }
 
-        processed += word.toUtf8().size() + WHITESPACE_SIZE;
+        processed += word.size() + WHITESPACE_SIZE;
         emit progress(processed, total);
 
         m_words[word].frequency++;
