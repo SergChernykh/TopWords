@@ -39,7 +39,6 @@ public slots:
 private slots:
     void onNewWord(const QString& word, int frequency);
     void onRemoveWord(const QString& word);
-
     void onStarted();
     void onCompleted();
     void onProgress(qint64 processed, qint64 total);

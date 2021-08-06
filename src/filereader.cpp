@@ -5,11 +5,11 @@
 #include <QDebug>
 #include <QHash>
 #include <algorithm>
-#include <queue>
 #include <QFileInfo>
-#include <optional>
-#include <QElapsedTimer>
 #include <QThread>
+#include <QElapsedTimer>
+
+static constexpr int WHITESPACE_SIZE = 1;
 
 FileReader::FileReader(QObject *parent)
     : QObject(parent)
@@ -30,79 +30,68 @@ void FileReader::processFile(const QString &path)
     }
 
     emit started();
-
-//    QTextStream stream(&file);
+    prepare();
 
     QString word;
-
-    prepare();
 
     quint64 total = file.size();
     quint64 processed = 0;
 
-    const int buffer_size = 4 * 1024;
     QByteArray buffer;
 
-    QElapsedTimer timer;
-    timer.start();
+    QTextStream stream(&file);
 
-    while (!file.atEnd())
+    while (!stream.atEnd())
     {
-        buffer = file.read(buffer_size);
-        processed += buffer.size();
+        stream >> buffer;
+        word = QString::fromUtf8(buffer);
 
-        QTextStream stream(&buffer);
-
-        while (!stream.atEnd())
+        if (word.isEmpty())
         {
-            stream >> word;
+            continue;
+        }
 
-            m_words[word].frequency++;
+        processed += buffer.size() + WHITESPACE_SIZE;
+        emit progress(processed, total);
 
-            auto& item = m_words[word];
+        m_words[word].frequency++;
 
-            if (isHeapContainsItem(item))
+        auto& item = m_words[word];
+
+        if (isHeapContainsItem(item))
+        {
+            updateWordFrequencyInHeap(item);
+            emit newWord(word, item.frequency);
+        }
+        else
+        {
+            if (!isHeapFull())
             {
-                updateWordFrequencyInHeap(item);
+                pushInHeap(word, item.frequency);
                 emit newWord(word, item.frequency);
             }
             else
             {
-                if (!isHeapFull())
+                if (item.frequency > m_topWordsHeap.front().frequency)
                 {
+                    const QString& oldWord = m_topWordsHeap.front().word;
+                    m_words[oldWord].indexInHeap = INDEX_NONE;
+                    emit removeWord(oldWord);
+                    popFromHeap();
                     pushInHeap(word, item.frequency);
                     emit newWord(word, item.frequency);
                 }
                 else
                 {
-                    if (item.frequency > m_topWordsHeap.front().frequency)
-                    {
-                        const QString& oldWord = m_topWordsHeap.front().word;
-                        m_words[oldWord].indexInHeap = INDEX_NONE;
-                        emit removeWord(oldWord);
-                        popFromHeap();
-                        pushInHeap(word, item.frequency);
-                        emit newWord(word, item.frequency);
-                    }
-                    else
-                    {
-                        continue;
-                    }
+                    continue;
                 }
             }
-
-            updateIndexesInHash();
         }
 
-        emit progress(processed, total);
-
-
+        updateIndexesInHash();
     }
 
-    qDebug() << "total" << total;
-    qDebug() << "processed" << processed;
-    qDebug() << "elapsed time: " << timer.elapsed() << "ms";
-
+    emit progress(total, total);
     emit completed();
 
     file.close();

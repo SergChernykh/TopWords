@@ -22,6 +22,7 @@ TopCounter::TopCounter(QObject *parent)
     connect(m_reader, &FileReader::error, [this](const FileReaderError& e){
         emit error(e.message);
     });
+
     connect(m_reader, &FileReader::started, this, &TopCounter::onStarted);
     connect(m_reader, &FileReader::completed, this, &TopCounter::onCompleted);
     connect(m_reader, &FileReader::newWord, this, &TopCounter::onNewWord);
@@ -80,6 +81,7 @@ void TopCounter::onCompleted()
 {
     setFileProcessing(false);
     m_tickTimer.stop();
+    tick(); //call last tick
 }
 
 void TopCounter::onProgress(qint64 processed, qint64 total)
@@ -90,7 +92,6 @@ void TopCounter::onProgress(qint64 processed, qint64 total)
     }
 
     m_progress = static_cast<double>(processed) / static_cast<double>(total);
-    emit progressChanged();
 }
 
 void TopCounter::reset()
@@ -112,6 +113,7 @@ void TopCounter::tick()
     {
         m_wordsModel->refresh();
     }
+    emit progressChanged();
 }
 
 void TopCounter::setWordsModel(WordsModel *model)

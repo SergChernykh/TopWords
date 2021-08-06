@@ -5,9 +5,8 @@
 #include <QHash>
 #include <QVector>
 
-static constexpr int INDEX_NONE = -1;
+inline constexpr int INDEX_NONE = -1;
 
-//TODO: may be rename
 struct WordHashItem
 {
     unsigned int frequency = 0;
